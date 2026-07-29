@@ -59,7 +59,7 @@
       var subject = "Forespørsel om tilbud — " + navn;
       var body = "Navn: " + navn + "\nKontakt: " + kontakt + "\n\n" + melding;
       var mailto =
-        "mailto:post@desec.no?subject=" +
+        "mailto:oystein@desec.no?subject=" +
         encodeURIComponent(subject) +
         "&body=" +
         encodeURIComponent(body);
