@@ -2,6 +2,8 @@
 
 Nettside for DeSec — vekterselskap i Bergen og omegn.
 
+**Live:** https://8c22kvwr4v-jpg.github.io/DeSec/ (publiseres automatisk fra `main` via GitHub Pages)
+
 Statisk side bygget med HTML, CSS og vanilla JS. Ingen build-steg.
 
 ## Kjøre lokalt
