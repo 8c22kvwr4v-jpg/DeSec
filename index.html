@@ -4,11 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DeSec — Vekterselskap i Bergen</title>
-<meta name="description" content="DeSec sikrer bedrifter, eiendom, byggeplasser og arrangementer i hele Bergen. Døgnbemannet vakttelefon, faste vektere, og folk med reell operativ bakgrunn." />
+<meta name="description" content="DeSec tar oppdrag for bedrifter, eiendom, byggeplasser og arrangementer i hele Bergen. Døgnbemannet vakttelefon, faste vektere, og folk med reell operativ bakgrunn." />
 <meta name="theme-color" content="#08090C" />
 
 <meta property="og:title" content="DeSec — Vekterselskap i Bergen" />
-<meta property="og:description" content="Din sikkerhet — vårt ansvar. Vakthold, rondering, alarmutrykning og arrangementssikring i hele Bergen." />
+<meta property="og:description" content="Din sikkerhet — vårt ansvar. Vakthold, rondering, alarmutrykning og arrangementssikring. Vi tar oppdrag i hele Bergen." />
 <meta property="og:type" content="website" />
 
 <link rel="icon" type="image/png" href="assets/img/favicon-64.png" sizes="64x64" />
@@ -52,7 +52,7 @@
     <nav class="nav" id="nav" aria-label="Hovedmeny">
       <a href="#dekning">Dekning</a>
       <a href="#tjenester">Tjenester</a>
-      <a href="#test">Årvåkenhetstest</a>
+      <a href="#test">Test deg selv</a>
       <a href="#om">Om oss</a>
       <a href="#historie">Historie</a>
       <a href="#kontakt">Kontakt</a>
@@ -81,9 +81,9 @@
       </h1>
 
       <p class="hero-lede up">
-        Vi sikrer bedrifter, eiendom, byggeplasser og arrangementer i hele
-        Bergen. Døgnbemannet vakttelefon, faste vektere du blir kjent med,
-        og folk med reell operativ bakgrunn.
+        Vi tar oppdrag for bedrifter, eiendom, byggeplasser og arrangementer
+        i hele Bergen. Døgnbemannet vakttelefon, faste vektere du blir kjent
+        med, og folk med reell operativ bakgrunn.
       </p>
 
       <p class="chip up">
@@ -104,7 +104,7 @@
           <dd>24/7</dd>
         </div>
         <div>
-          <dt>Bydeler dekket</dt>
+          <dt>Bydeler vi rykker ut i</dt>
           <dd>08</dd>
         </div>
         <div>
@@ -131,8 +131,8 @@
         <p class="eyebrow">Dekningsområde</p>
         <h2>Hele Bergen.<br />Åtte bydeler.</h2>
         <p class="lede">
-          Vi rykker ut i hele Bergen kommune. Velg en bydel for å se hva vi
-          typisk sikrer der.
+          Vi tar oppdrag i hele Bergen kommune. Velg en bydel for å se hva
+          slags sikring vi kan levere der.
         </p>
       </header>
 
@@ -333,8 +333,91 @@
     </div>
   </section>
 
+  <!-- ADGANGSKONTROLL -->
+  <section class="sec" id="port">
+    <div class="wrap">
+      <header class="sec-head up">
+        <p class="eyebrow">Adgangskontroll</p>
+        <h2>Hvem slipper<br />du inn?</h2>
+        <p class="lede">
+          Du står i porten. Regelverket vokser mens skiftet går, og kortet
+          foran deg må vurderes mot alt som gjelder akkurat nå.
+        </p>
+      </header>
+
+      <div class="game up" id="gate">
+        <div class="game-hud">
+          <div class="hud-cell">
+            <span class="hud-k">Poeng</span>
+            <span class="hud-v" id="g2-score">0</span>
+          </div>
+          <div class="hud-cell">
+            <span class="hud-k">Riktig</span>
+            <span class="hud-v" id="g2-acc">0/0</span>
+          </div>
+          <div class="hud-cell">
+            <span class="hud-k">Klokka</span>
+            <span class="hud-v" id="g2-clock">20:40</span>
+          </div>
+          <div class="hud-cell hud-time">
+            <span class="hud-k">Tid</span>
+            <span class="hud-v" id="g2-time">60</span>
+          </div>
+        </div>
+
+        <div class="gate-stage">
+          <div class="gate">
+            <article class="pass" id="pass" aria-live="polite">
+              <div class="pass-top">
+                <span class="pass-type" id="pass-type">Ansatt</span>
+                <span class="pass-mug" id="pass-mug">MH</span>
+              </div>
+              <h3 class="pass-name" id="pass-name">Mari Haugen</h3>
+              <dl class="pass-rows" id="pass-rows"></dl>
+            </article>
+
+            <aside class="gate-rules">
+              <p class="rules-tag">Gjeldende regler</p>
+              <ul id="rules-list"></ul>
+            </aside>
+          </div>
+
+          <div class="gate-bar">
+            <button class="btn btn-deny" id="btn-deny" type="button">
+              Avvis
+              <kbd aria-hidden="true">←</kbd>
+            </button>
+            <button class="btn btn-admit" id="btn-admit" type="button">
+              Slipp inn
+              <kbd aria-hidden="true">→</kbd>
+            </button>
+          </div>
+
+          <p class="gate-fb" id="gate-fb" role="status">&nbsp;</p>
+
+          <div class="game-veil" id="gate-veil">
+            <div class="veil-card">
+              <p class="veil-tag" id="gate-veil-tag">Klar</p>
+              <h3 id="gate-veil-title">Adgangskontroll</h3>
+              <p id="gate-veil-body">
+                Vurder hvert adgangskort mot reglene som gjelder. Nye regler
+                kommer underveis i skiftet. Bruk knappene eller piltastene.
+              </p>
+              <button class="btn btn-solid" id="gate-veil-btn" type="button">Start skiftet</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="game-foot">
+          Adgangskontroll er en av tjenestene våre. I virkeligheten står det
+          en person i porten — ikke en knapp.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <!-- OM OSS -->
-  <section class="sec" id="om">
+  <section class="sec sec-tint" id="om">
     <div class="wrap om">
       <div class="om-copy up">
         <p class="eyebrow">Om DeSec</p>
@@ -392,7 +475,7 @@
   </section>
 
   <!-- HISTORIE -->
-  <section class="sec sec-tint" id="historie">
+  <section class="sec" id="historie">
     <div class="wrap">
       <header class="sec-head up">
         <p class="eyebrow">Historien vår</p>
@@ -433,10 +516,10 @@
         <li>
           <span class="tl-yr">I dag</span>
           <div class="tl-body">
-            <h3>Hele Bergen kommune</h3>
+            <h3>Klare for oppdrag i hele kommunen</h3>
             <p>
-              Vi tar oppdrag i alle åtte bydeler, fra sentrum og havn til
-              Åsane, Arna og Fana.
+              Vi rykker ut i hele Bergen — fra sentrum og havn til Åsane,
+              Arna og Fana. Ta kontakt, så kommer vi på befaring.
             </p>
           </div>
         </li>
@@ -445,7 +528,7 @@
   </section>
 
   <!-- KONTAKT -->
-  <section class="sec" id="kontakt">
+  <section class="sec sec-tint" id="kontakt">
     <div class="wrap">
       <header class="sec-head up">
         <p class="eyebrow">Kontakt</p>
@@ -532,7 +615,7 @@
         <li><a href="#dekning">Dekningsområde</a></li>
         <li><a href="#om">Om oss</a></li>
         <li><a href="#historie">Historien vår</a></li>
-        <li><a href="#test">Årvåkenhetstest</a></li>
+        <li><a href="#test">Test deg selv</a></li>
       </ul>
     </div>
 
