@@ -471,6 +471,241 @@
   })();
 
   /* ----------------------------------------------------------
+     Adgangskontroll
+     ---------------------------------------------------------- */
+  var gate = document.getElementById("gate");
+  if (gate) (function () {
+    var elType = document.getElementById("pass-type");
+    var elMug = document.getElementById("pass-mug");
+    var elName = document.getElementById("pass-name");
+    var elRows = document.getElementById("pass-rows");
+    var elRules = document.getElementById("rules-list");
+    var elScore = document.getElementById("g2-score");
+    var elAcc = document.getElementById("g2-acc");
+    var elClock = document.getElementById("g2-clock");
+    var elTime = document.getElementById("g2-time");
+    var elFb = document.getElementById("gate-fb");
+    var bDeny = document.getElementById("btn-deny");
+    var bAdmit = document.getElementById("btn-admit");
+    var veil = document.getElementById("gate-veil");
+    var vTag = document.getElementById("gate-veil-tag");
+    var vTitle = document.getElementById("gate-veil-title");
+    var vBody = document.getElementById("gate-veil-body");
+    var vBtn = document.getElementById("gate-veil-btn");
+    var timeCell = elTime.closest(".hud-cell");
+
+    var FIRST = ["Mari", "Jonas", "Ingrid", "Sindre", "Camilla", "Ole", "Hedda",
+                 "Kristian", "Tuva", "Espen", "Silje", "Andreas", "Nora",
+                 "Håkon", "Linn", "Magnus", "Vetle", "Ida"];
+    var LAST = ["Haugen", "Nilsen", "Berg", "Solheim", "Lund", "Vik", "Aas",
+                "Fjeldstad", "Moen", "Rygg", "Dahl", "Ness", "Strand", "Bakke",
+                "Hjelle", "Tveit", "Osland", "Mjelde"];
+    var FIRMS = ["Vestland Rør AS", "BKK Elektro", "Nordvest Ventilasjon",
+                 "Bergen Kulde AS", "Fana Malerservice", "Hordaland Heis"];
+
+    var ALL_RULES = [
+      { id: "exp",   text: "Adgangskortet må være gyldig." },
+      { id: "wo",    text: "Leverandør må ha arbeidsordre." },
+      { id: "host",  text: "Besøkende må ha navngitt vert." },
+      { id: "night", text: "Etter kl. 22:00 slippes kun ansatte inn." }
+    ];
+
+    var DUR = 60;
+    var state = "idle";
+    var score = 0, right = 0, total = 0, timeLeft = DUR, streak = 0;
+    var rules = [], person = null, mins = 0, tId = null;
+
+    function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+    function pad(n) { return String(n).padStart(2, "0"); }
+
+    function clockStr() {
+      var t = 20 * 60 + 40 + mins;
+      return pad(Math.floor(t / 60) % 24) + ":" + pad(t % 60);
+    }
+    function isNight() { return (20 * 60 + 40 + mins) >= 22 * 60; }
+
+    function hasRule(id) {
+      return rules.some(function (r) { return r.id === id; });
+    }
+
+    function makePerson() {
+      var type = pick(["ANSATT", "LEVERANDØR", "BESØKENDE"]);
+      var p = {
+        type: type,
+        first: pick(FIRST),
+        last: pick(LAST),
+        cardId: "DS-" + (1000 + Math.floor(Math.random() * 8999)),
+        expired: Math.random() < 0.26,
+        firm: type === "LEVERANDØR" ? pick(FIRMS) : null,
+        wo: Math.random() < 0.68,
+        host: Math.random() < 0.66 ? pick(FIRST) + " " + pick(LAST) : null
+      };
+      var d = new Date(2026, 2, 12);
+      d.setDate(d.getDate() + (p.expired ? -(3 + Math.floor(Math.random() * 300))
+                                          : (14 + Math.floor(Math.random() * 500))));
+      p.until = pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + String(d.getFullYear()).slice(2);
+      return p;
+    }
+
+    // Fasit: returnerer om personen skal slippes inn, og hvilken regel som evt. brytes
+    function judge(p) {
+      if (hasRule("exp") && p.expired)
+        return { admit: false, why: "Kortet er utløpt." };
+      if (hasRule("night") && isNight() && p.type !== "ANSATT")
+        return { admit: false, why: "Etter 22:00 slippes kun ansatte inn." };
+      if (hasRule("wo") && p.type === "LEVERANDØR" && !p.wo)
+        return { admit: false, why: "Leverandør uten arbeidsordre." };
+      if (hasRule("host") && p.type === "BESØKENDE" && !p.host)
+        return { admit: false, why: "Besøkende uten navngitt vert." };
+      return { admit: true, why: "" };
+    }
+
+    function drawRules(freshId) {
+      elRules.innerHTML = "";
+      rules.forEach(function (r) {
+        var li = document.createElement("li");
+        li.textContent = r.text;
+        if (r.id === freshId) li.className = "fresh";
+        elRules.appendChild(li);
+      });
+    }
+
+    function row(k, v, bad) {
+      var d = document.createElement("div");
+      var dt = document.createElement("dt");
+      dt.textContent = k;
+      var dd = document.createElement("dd");
+      dd.textContent = v;
+      if (bad) dd.className = "bad";
+      d.appendChild(dt); d.appendChild(dd);
+      return d;
+    }
+
+    function show(p) {
+      elType.textContent = p.type.charAt(0) + p.type.slice(1).toLowerCase();
+      elType.setAttribute("data-t", p.type);
+      elName.textContent = p.first + " " + p.last;
+      elMug.textContent = p.first.charAt(0) + p.last.charAt(0);
+
+      elRows.innerHTML = "";
+      elRows.appendChild(row("Kort-ID", p.cardId));
+      elRows.appendChild(row("Gyldig til", p.until, p.expired));
+      if (p.type === "LEVERANDØR") {
+        elRows.appendChild(row("Firma", p.firm));
+        elRows.appendChild(row("Arbeidsordre", p.wo ? "AO-" + (200 + Math.floor(Math.random() * 799)) : "Mangler", !p.wo));
+      } else if (p.type === "BESØKENDE") {
+        elRows.appendChild(row("Vert", p.host || "Ikke oppgitt", !p.host));
+      } else {
+        elRows.appendChild(row("Avdeling", pick(["Drift", "Lager", "Resepsjon", "Teknisk", "Renhold"])));
+      }
+    }
+
+    function next() {
+      mins += 18 + Math.floor(Math.random() * 14);
+      elClock.textContent = clockStr();
+      person = makePerson();
+      show(person);
+    }
+
+    function hud() {
+      elScore.textContent = score;
+      elAcc.textContent = right + "/" + total;
+      elTime.textContent = Math.max(0, Math.ceil(timeLeft));
+      timeCell.classList.toggle("low", timeLeft <= 10);
+    }
+
+    function decide(admit) {
+      if (state !== "run" || !person) return;
+      var v = judge(person);
+      var who = person.first + " " + person.last;
+      total++;
+
+      if (v.admit === admit) {
+        right++; streak++;
+        score += 100 + Math.min(streak, 5) * 20;
+        elFb.className = "gate-fb ok";
+        elFb.textContent = admit
+          ? "Riktig — " + who + " sluppet inn." + (streak > 1 ? "  Rekke: " + streak : "")
+          : "Riktig — " + who + " avvist. " + v.why;
+      } else {
+        streak = 0;
+        timeLeft = Math.max(0, timeLeft - 2);
+        elFb.className = "gate-fb no";
+        elFb.textContent = v.admit
+          ? "Feil — " + who + " skulle vært sluppet inn."
+          : "Feil — " + who + ": " + v.why.toLowerCase();
+      }
+
+      // ny regel hver femte avgjørelse
+      if (total % 5 === 0 && rules.length < ALL_RULES.length) {
+        var nr = ALL_RULES[rules.length];
+        rules.push(nr);
+        drawRules(nr.id);
+        elFb.className = "gate-fb";
+        elFb.textContent = "Ny regel: " + nr.text;
+      }
+
+      hud();
+      next();
+    }
+
+    function over() {
+      state = "over";
+      clearInterval(tId);
+      var pct = total ? Math.round((right / total) * 100) : 0;
+      var verdict = pct >= 90 ? "Det er sånn en port skal stå."
+                  : pct >= 70 ? "Godkjent, men noen slapp forbi."
+                  : "Her hadde det blitt en samtale etter skiftet.";
+      vTag.textContent = "Skiftet er over";
+      vTitle.textContent = score + " poeng";
+      vBody.innerHTML = verdict + " <b>" + right + "</b> av <b>" + total +
+        "</b> riktige avgjørelser (" + pct + " %), med <b>" + rules.length +
+        "</b> regler i spill.";
+      vBtn.textContent = "Ta et nytt skift";
+      veil.hidden = false;
+    }
+
+    function start() {
+      score = 0; right = 0; total = 0; streak = 0;
+      timeLeft = DUR; mins = 0;
+      rules = [ALL_RULES[0]];
+      drawRules();
+      elFb.className = "gate-fb";
+      elFb.innerHTML = "&nbsp;";
+      elClock.textContent = clockStr();
+      hud();
+      next();
+      state = "run";
+      veil.hidden = true;
+
+      clearInterval(tId);
+      tId = setInterval(function () {
+        if (state !== "run") return;
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) { timeLeft = 0; hud(); over(); return; }
+        hud();
+      }, 100);
+    }
+
+    bDeny.addEventListener("click", function () { decide(false); });
+    bAdmit.addEventListener("click", function () { decide(true); });
+    vBtn.addEventListener("click", start);
+
+    document.addEventListener("keydown", function (e) {
+      if (state !== "run") return;
+      var r = gate.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight) return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); decide(false); }
+      if (e.key === "ArrowRight") { e.preventDefault(); decide(true); }
+    });
+
+    rules = [ALL_RULES[0]];
+    drawRules();
+    show(makePerson());
+    hud();
+  })();
+
+  /* ----------------------------------------------------------
      Skjema
      ---------------------------------------------------------- */
   var form = document.getElementById("form");
