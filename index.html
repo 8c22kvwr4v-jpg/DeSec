@@ -4,11 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DeSec — Vekterselskap i Bergen</title>
-<meta name="description" content="DeSec tar oppdrag for bedrifter, eiendom, byggeplasser og arrangementer i hele Bergen. Døgnbemannet vakttelefon, faste vektere, og folk med reell operativ bakgrunn." />
+<meta name="description" content="DeSec tar oppdrag for bedrifter, eiendom, byggeplasser og arrangementer i hele Bergen. Døgnbemannet vakttelefon, faste vektere, og folk du blir glad for å se." />
 <meta name="theme-color" content="#08090C" />
 
 <meta property="og:title" content="DeSec — Vekterselskap i Bergen" />
-<meta property="og:description" content="Din sikkerhet — vårt ansvar. Vakthold, rondering, alarmutrykning og arrangementssikring. Vi tar oppdrag i hele Bergen." />
+<meta property="og:description" content="Din sikkerhet — vårt ansvar. Vakthold, rondering, alarmutrykning og arrangementssikring i hele Bergen." />
 <meta property="og:type" content="website" />
 
 <link rel="icon" type="image/png" href="assets/img/favicon-64.png" sizes="64x64" />
@@ -22,6 +22,7 @@
 <body>
 
 <div class="grain" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
 <a class="skip" href="#main">Hopp til innhold</a>
 
 <!-- STATUSSTRIPE -->
@@ -52,13 +53,13 @@
     <nav class="nav" id="nav" aria-label="Hovedmeny">
       <a href="#dekning">Dekning</a>
       <a href="#tjenester">Tjenester</a>
-      <a href="#test">Test deg selv</a>
+      <a href="#port">Test deg selv</a>
       <a href="#om">Om oss</a>
       <a href="#historie">Historie</a>
       <a href="#kontakt">Kontakt</a>
     </nav>
 
-    <a href="#kontakt" class="btn btn-solid btn-sm head-cta">Be om tilbud</a>
+    <a href="#kontakt" class="btn btn-solid btn-sm head-cta mag">Be om tilbud</a>
 
     <button class="burger" id="burger" aria-expanded="false" aria-controls="nav" aria-label="Åpne meny">
       <span></span><span></span>
@@ -70,10 +71,14 @@
 
   <!-- HERO -->
   <section class="hero" id="top">
-    <canvas class="radar" id="radar" aria-hidden="true"></canvas>
+    <div class="hero-fx" aria-hidden="true">
+      <canvas class="radar" id="radar"></canvas>
+      <div class="hero-grid"></div>
+      <div class="hero-torch"></div>
+    </div>
 
     <div class="wrap hero-inner">
-      <p class="eyebrow up">Vekterselskap · Bergen kommune</p>
+      <p class="eyebrow up">Vekterselskap</p>
 
       <h1 class="hero-h up">
         Din sikkerhet<span class="dot">.</span><br />
@@ -83,7 +88,7 @@
       <p class="hero-lede up">
         Vi tar oppdrag for bedrifter, eiendom, byggeplasser og arrangementer
         i hele Bergen. Døgnbemannet vakttelefon, faste vektere du blir kjent
-        med, og folk med reell operativ bakgrunn.
+        med, og folk som roer ned situasjoner før de vokser.
       </p>
 
       <p class="chip up">
@@ -92,8 +97,8 @@
       </p>
 
       <div class="hero-cta up">
-        <a href="#kontakt" class="btn btn-solid">Be om tilbud</a>
-        <a href="#test" class="btn btn-line">Ta årvåkenhetstesten</a>
+        <a href="#kontakt" class="btn btn-solid mag">Be om tilbud</a>
+        <a href="#port" class="btn btn-line">Prøv adgangskontrollen</a>
       </div>
     </div>
 
@@ -101,19 +106,19 @@
       <dl class="readout up">
         <div>
           <dt>Vakttelefon</dt>
-          <dd>24/7</dd>
+          <dd><span class="num" data-to="24">24</span>/<span class="num" data-to="7">7</span></dd>
         </div>
         <div>
-          <dt>Bydeler vi rykker ut i</dt>
-          <dd>08</dd>
+          <dt>Bydeler vi dekker</dt>
+          <dd><span class="num" data-to="8" data-pad="2">08</span></dd>
         </div>
         <div>
           <dt>Fast kontaktperson</dt>
-          <dd>01</dd>
+          <dd><span class="num" data-to="1" data-pad="2">01</span></dd>
         </div>
         <div>
           <dt>Binding på tilbud</dt>
-          <dd>00</dd>
+          <dd><span class="num" data-to="0" data-pad="2">00</span></dd>
         </div>
       </dl>
     </div>
@@ -129,10 +134,10 @@
     <div class="wrap">
       <header class="sec-head up">
         <p class="eyebrow">Dekningsområde</p>
-        <h2>Hele Bergen.<br />Åtte bydeler.</h2>
+        <h2>Vi rykker ut<br />i hele Bergen.</h2>
         <p class="lede">
-          Vi tar oppdrag i hele Bergen kommune. Velg en bydel for å se hva
-          slags sikring vi kan levere der.
+          Åtte bydeler, ett telefonnummer. Velg en bydel for å se hva slags
+          sikring vi kan levere der.
         </p>
       </header>
 
@@ -277,67 +282,11 @@
     </div>
   </section>
 
-  <!-- ÅRVÅKENHETSTEST -->
-  <section class="sec sec-tint" id="test">
-    <div class="wrap">
-      <header class="sec-head up">
-        <p class="eyebrow">Årvåkenhetstest</p>
-        <h2>Kan du se det<br />før det skjer?</h2>
-        <p class="lede">
-          En vekter ser på det samme bildet i timevis, og må fange det ene
-          som bryter mønsteret. Prøv i seksti sekunder.
-        </p>
-      </header>
-
-      <div class="game up" id="game">
-        <div class="game-hud">
-          <div class="hud-cell">
-            <span class="hud-k">Poeng</span>
-            <span class="hud-v" id="hud-score">0</span>
-          </div>
-          <div class="hud-cell">
-            <span class="hud-k">Nivå</span>
-            <span class="hud-v" id="hud-level">1</span>
-          </div>
-          <div class="hud-cell">
-            <span class="hud-k">Reaksjon</span>
-            <span class="hud-v" id="hud-react">—</span>
-          </div>
-          <div class="hud-cell hud-time">
-            <span class="hud-k">Tid</span>
-            <span class="hud-v" id="hud-time">60</span>
-          </div>
-        </div>
-
-        <div class="game-stage">
-          <canvas id="feed" aria-label="Overvåkningsrutenett"></canvas>
-
-          <div class="game-veil" id="veil">
-            <div class="veil-card">
-              <p class="veil-tag" id="veil-tag">Klar</p>
-              <h3 id="veil-title">Årvåkenhetstest</h3>
-              <p id="veil-body">
-                Et rutenett av kamerabilder. I ett av dem oppstår et avvik —
-                en rød markør. Trykk på riktig rute før vinduet lukkes.
-              </p>
-              <button class="btn btn-solid" id="veil-btn" type="button">Start testen</button>
-            </div>
-          </div>
-        </div>
-
-        <p class="game-foot">
-          Testen varer i seksti sekunder. Våre vektere gjør dette i åtte timer,
-          natt etter natt.
-        </p>
-      </div>
-    </div>
-  </section>
-
   <!-- ADGANGSKONTROLL -->
-  <section class="sec" id="port">
+  <section class="sec sec-tint" id="port">
     <div class="wrap">
       <header class="sec-head up">
-        <p class="eyebrow">Adgangskontroll</p>
+        <p class="eyebrow">Test deg selv</p>
         <h2>Hvem slipper<br />du inn?</h2>
         <p class="lede">
           Du står i porten. Regelverket vokser mens skiftet går, og kortet
@@ -417,15 +366,20 @@
   </section>
 
   <!-- OM OSS -->
-  <section class="sec sec-tint" id="om">
+  <section class="sec" id="om">
     <div class="wrap om">
       <div class="om-copy up">
         <p class="eyebrow">Om DeSec</p>
-        <h2>Folk som har<br />stått i det før</h2>
+        <h2>Folk du blir<br />glad for å se</h2>
         <p>
-          En vekter er ikke bedre enn det hun eller han har trent på. Derfor
-          henter vi folk med reell operativ bakgrunn — de har håndtert alvor
-          tidligere, og holder hodet kaldt når noe skjer.
+          En vekter skal ikke være den som skaper uro. Vi henter folk som er
+          trygge på seg selv, som snakker med folk framfor å heve stemmen, og
+          som løser ting før de rekker å bli en situasjon.
+        </p>
+        <p>
+          Bak den rolige fremtoningen ligger det erfaring fra jobber der ting
+          faktisk kan gå galt. Det er der man lærer å kjenne igjen mønsteret
+          tidlig — og å holde hodet kaldt når andre mister det.
         </p>
         <p>
           Vi er små nok til at du får én fast kontaktperson, og godt nok
@@ -436,11 +390,11 @@
       <ul class="creds up">
         <li>
           <span class="cred-k">Røde Kors</span>
-          <span class="cred-v">Søk, redning og førstehjelp i felt</span>
+          <span class="cred-v">Førstehjelp og leteaksjoner i felt</span>
         </li>
         <li>
           <span class="cred-k">Forsvaret</span>
-          <span class="cred-v">Vakthold og oppdrag under press</span>
+          <span class="cred-v">Vakthold og ansvar under press</span>
         </li>
         <li>
           <span class="cred-k">Politiet</span>
@@ -475,7 +429,7 @@
   </section>
 
   <!-- HISTORIE -->
-  <section class="sec" id="historie">
+  <section class="sec sec-tint" id="historie">
     <div class="wrap">
       <header class="sec-head up">
         <p class="eyebrow">Historien vår</p>
@@ -509,17 +463,17 @@
             <h3>Erfaring fra felt, ikke fra brosjyre</h3>
             <p>
               Vi bygger virksomheten på erfaring fra Røde Kors, Forsvaret og
-              politiet — folk som har stått i det før.
+              politiet — folk som har stått i situasjoner før.
             </p>
           </div>
         </li>
         <li>
           <span class="tl-yr">I dag</span>
           <div class="tl-body">
-            <h3>Klare for oppdrag i hele kommunen</h3>
+            <h3>Klare for oppdrag i hele Bergen</h3>
             <p>
-              Vi rykker ut i hele Bergen — fra sentrum og havn til Åsane,
-              Arna og Fana. Ta kontakt, så kommer vi på befaring.
+              Vi rykker ut fra sentrum og havn til Åsane, Arna og Fana. Ta
+              kontakt, så kommer vi på befaring.
             </p>
           </div>
         </li>
@@ -528,7 +482,7 @@
   </section>
 
   <!-- KONTAKT -->
-  <section class="sec sec-tint" id="kontakt">
+  <section class="sec" id="kontakt">
     <div class="wrap">
       <header class="sec-head up">
         <p class="eyebrow">Kontakt</p>
@@ -557,7 +511,7 @@
               placeholder="Kort om oppdraget, sted og ønsket oppstart"></textarea>
           </label>
           <div class="form-send">
-            <button type="submit" class="btn btn-solid">Send forespørsel</button>
+            <button type="submit" class="btn btn-solid mag">Send forespørsel</button>
             <p class="form-note" id="form-note" role="status"></p>
           </div>
         </form>
@@ -575,7 +529,7 @@
           </a>
           <div class="kort-row kort-static">
             <span class="kort-k">Dekningsområde</span>
-            <span class="kort-v">Bergen kommune</span>
+            <span class="kort-v">Hele Bergen</span>
           </div>
           <div class="kort-row kort-static">
             <span class="kort-k">Svartid</span>
@@ -615,7 +569,7 @@
         <li><a href="#dekning">Dekningsområde</a></li>
         <li><a href="#om">Om oss</a></li>
         <li><a href="#historie">Historien vår</a></li>
-        <li><a href="#test">Test deg selv</a></li>
+        <li><a href="#port">Adgangskontroll</a></li>
       </ul>
     </div>
 
@@ -624,7 +578,7 @@
       <ul>
         <li><a href="tel:+4798452155">984 52 155</a></li>
         <li><a href="mailto:Oystein@Desec.no">Oystein@Desec.no</a></li>
-        <li>Bergen kommune</li>
+        <li>Hele Bergen</li>
       </ul>
     </div>
   </div>

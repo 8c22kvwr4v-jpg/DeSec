@@ -117,6 +117,19 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round
 }
 .skip:focus { left: 16px; top: 16px; }
 
+/* lesefremdrift */
+.progress {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 200;
+  height: 2px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--signal), var(--flare));
+  will-change: transform;
+}
+
 /* film grain — kills the flat-vector look */
 .grain {
   position: fixed; inset: 0; z-index: 9999;
@@ -321,16 +334,28 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round
   padding-top: 82px;
   padding-bottom: 0;
   overflow: hidden;
+  --mx: 72%;
+  --my: 42%;
 }
 .hero::after {
   content: "";
   position: absolute; inset: 0;
   pointer-events: none;
+  z-index: 1;
   background:
     radial-gradient(900px 520px at 78% 34%, rgba(61,220,255,.07), transparent 62%),
     radial-gradient(720px 480px at 8% 6%, rgba(198,59,255,.075), transparent 60%);
 }
-.hero-inner { position: relative; z-index: 2; }
+.hero-inner { position: relative; z-index: 3; }
+.hero .wrap:last-child { position: relative; z-index: 3; }
+
+.hero-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
 
 .radar {
   position: absolute;
@@ -338,9 +363,26 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round
   transform: translateY(-54%);
   width: min(760px, 62vw);
   aspect-ratio: 1;
-  z-index: 1;
   opacity: .5;
-  pointer-events: none;
+}
+
+/* lykt: rutenettet finnes bare der lyset treffer */
+.hero-grid {
+  position: absolute;
+  inset: -1px;
+  background-image:
+    linear-gradient(rgba(61,220,255,.30) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61,220,255,.30) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(circle 285px at var(--mx) var(--my), #000 8%, transparent 74%);
+  mask-image: radial-gradient(circle 285px at var(--mx) var(--my), #000 8%, transparent 74%);
+  transition: opacity .5s var(--ease);
+}
+.hero-torch {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 330px at var(--mx) var(--my),
+              rgba(61,220,255,.13), rgba(61,220,255,.04) 40%, transparent 72%);
 }
 
 .hero-h {
@@ -505,11 +547,24 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round
 }
 .tile {
   position: relative;
+  isolation: isolate;
   background: var(--ink);
   padding: 32px 26px 36px;
   transition: background .22s var(--ease);
+  --tx: 50%; --ty: 50%;
 }
 .sec-tint .tile { background: var(--slate); }
+/* lys som følger pekeren inni ruten */
+.tile::after {
+  content: "";
+  position: absolute; inset: 0;
+  z-index: -1;
+  opacity: 0;
+  background: radial-gradient(220px circle at var(--tx) var(--ty),
+              rgba(61,220,255,.09), transparent 68%);
+  transition: opacity .3s var(--ease);
+}
+.tile:hover::after { opacity: 1; }
 .tile::before {
   content: "";
   position: absolute; top: 0; left: 0;
@@ -585,9 +640,6 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round
 }
 .hud-time .hud-v { color: var(--signal); }
 .hud-time.low .hud-v { color: var(--crit); }
-
-.game-stage { position: relative; }
-#feed { display: block; width: 100%; height: auto; touch-action: manipulation; }
 
 .game-veil {
   position: absolute; inset: 0;
@@ -996,18 +1048,35 @@ a.kort-row:hover .kort-a { color: var(--signal); transform: translateX(4px); }
 
 .up {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity .75s var(--ease), transform .75s var(--ease);
+  transform: translateY(20px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+  transition-delay: calc(var(--i, 0) * 65ms);
 }
 .up.in { opacity: 1; transform: none; }
 
-.hero .up { transition-delay: calc(var(--i, 0) * 70ms); }
+/* kaskade innad i en seksjon */
+.tiles.in .tile,
+.svc.in .svc-row,
+.creds.in li,
+.tl.in li {
+  animation: rise .7s var(--ease) both;
+  animation-delay: calc(var(--j, 0) * 55ms);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.mag { will-change: transform; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .up { opacity: 1; transform: none; transition: none; }
+  .tiles.in .tile, .svc.in .svc-row, .creds.in li, .tl.in li { animation: none; }
   .marquee-row, .pip { animation: none; }
   .btn:hover { transform: none; }
+  .hero-grid, .hero-torch { display: none; }
+  .progress { display: none; }
 }
 
 /* ============================================================
@@ -1062,6 +1131,8 @@ a.kort-row:hover .kort-a { color: var(--signal); transform: translateX(4px); }
   .radar { display: none; }
   .readout { margin-top: 62px; }
   .readout > div { padding: 20px 16px 22px 0; }
+  /* la toppetiketten ta to linjer uten at tallene havner i utakt */
+  .readout dt { min-height: 2.7em; }
 
   .rail-item:first-of-type,
   .rail-sep:first-of-type,
