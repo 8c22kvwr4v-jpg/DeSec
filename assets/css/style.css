@@ -284,7 +284,27 @@ svg {
 .hero-lede {
   font-size: 1.12rem;
   max-width: 560px;
-  margin-bottom: 36px;
+  margin-bottom: 20px;
+}
+
+.guarantee-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  margin: 0 0 32px;
+  border-radius: 999px;
+  background: rgba(79, 224, 255, 0.08);
+  border: 1px solid rgba(79, 224, 255, 0.3);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.guarantee-badge svg {
+  width: 18px;
+  height: 18px;
+  color: var(--cyan);
+  flex-shrink: 0;
 }
 
 .hero-actions {
