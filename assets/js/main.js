@@ -36,16 +36,106 @@
   document.querySelectorAll(".hero .up").forEach(function (el, i) {
     el.style.setProperty("--i", i);
   });
+  // kaskade for barn i lister/rutenett
+  document.querySelectorAll(".tiles, .svc, .creds, .tl").forEach(function (grp) {
+    Array.prototype.forEach.call(grp.children, function (c, i) {
+      c.style.setProperty("--j", i);
+    });
+  });
+
+  function countUp(root) {
+    root.querySelectorAll(".num").forEach(function (n) {
+      var to = parseInt(n.dataset.to, 10);
+      var pad = parseInt(n.dataset.pad || "0", 10);
+      if (isNaN(to) || reduced) return;
+      var t0 = performance.now(), dur = 900;
+      (function step(now) {
+        var k = Math.min((now - t0) / dur, 1);
+        var v = Math.round(to * (1 - Math.pow(1 - k, 3)));
+        n.textContent = pad ? String(v).padStart(pad, "0") : v;
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    });
+  }
 
   if ("IntersectionObserver" in window && !reduced) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        if (e.target.querySelector(".num")) countUp(e.target);
+        io.unobserve(e.target);
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -50px 0px" });
     ups.forEach(function (el) { io.observe(el); });
   } else {
     ups.forEach(function (el) { el.classList.add("in"); });
+  }
+
+  /* ----------------------------------------------------------
+     Lesefremdrift
+     ---------------------------------------------------------- */
+  var bar = document.getElementById("progress");
+  if (bar && !reduced) {
+    var raf = false;
+    var paint = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = "scaleX(" + (max > 0 ? window.scrollY / max : 0) + ")";
+      raf = false;
+    };
+    window.addEventListener("scroll", function () {
+      if (!raf) { raf = true; requestAnimationFrame(paint); }
+    }, { passive: true });
+    paint();
+  }
+
+  /* ----------------------------------------------------------
+     Lykt i hero
+     ---------------------------------------------------------- */
+  var hero = document.querySelector(".hero");
+  if (hero && !reduced) {
+    var fine = window.matchMedia("(pointer: fine)").matches;
+
+    if (fine) {
+      hero.addEventListener("pointermove", function (e) {
+        var r = hero.getBoundingClientRect();
+        hero.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100) + "%");
+        hero.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100) + "%");
+      });
+    } else {
+      // uten mus: la lyset vandre sakte av seg selv
+      var t = 0;
+      (function drift() {
+        t += 0.004;
+        hero.style.setProperty("--mx", (52 + Math.cos(t) * 26) + "%");
+        hero.style.setProperty("--my", (46 + Math.sin(t * 1.35) * 20) + "%");
+        requestAnimationFrame(drift);
+      })();
+    }
+  }
+
+  /* ----------------------------------------------------------
+     Magnetiske knapper + lys i rutene
+     ---------------------------------------------------------- */
+  if (!reduced && window.matchMedia("(pointer: fine)").matches) {
+    document.querySelectorAll(".mag").forEach(function (el) {
+      el.addEventListener("pointermove", function (e) {
+        var r = el.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+        var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+        el.style.transform = "translate(" + (dx * 7).toFixed(2) + "px," +
+                             (dy * 5).toFixed(2) + "px)";
+      });
+      el.addEventListener("pointerleave", function () { el.style.transform = ""; });
+    });
+
+    document.querySelectorAll(".tile").forEach(function (el) {
+      el.addEventListener("pointermove", function (e) {
+        var r = el.getBoundingClientRect();
+        el.style.setProperty("--tx", (e.clientX - r.left) + "px");
+        el.style.setProperty("--ty", (e.clientY - r.top) + "px");
+      });
+    });
   }
 
   var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav a"));
@@ -208,267 +298,6 @@
     });
     if (hexes[1]) hexes[1].classList.add("sel");
   }
-
-  /* ----------------------------------------------------------
-     Årvåkenhetstest
-     ---------------------------------------------------------- */
-  var feed = document.getElementById("feed");
-  if (feed) (function () {
-    var ctx = feed.getContext("2d");
-    var veil = document.getElementById("veil");
-    var vTag = document.getElementById("veil-tag");
-    var vTitle = document.getElementById("veil-title");
-    var vBody = document.getElementById("veil-body");
-    var vBtn = document.getElementById("veil-btn");
-    var eScore = document.getElementById("hud-score");
-    var eLevel = document.getElementById("hud-level");
-    var eReact = document.getElementById("hud-react");
-    var eTime = document.getElementById("hud-time");
-    var timeCell = eTime.closest(".hud-cell");
-
-    var DUR = 60;
-    var cols = 4, rows = 3, cw = 0, ch = 0, W = 0, H = 0;
-    var tiles = [];
-    var state = "idle";
-    var score = 0, level = 1, hits = 0, missed = 0;
-    var timeLeft = DUR, reacts = [];
-    var anom = null, nextAt = 0, last = 0, flash = null;
-    var resizeTimer = null;
-
-    function build() {
-      var n = cols * rows;
-      tiles = [];
-      for (var i = 0; i < n; i++) {
-        var dots = [];
-        var dn = 3 + Math.floor(Math.random() * 3);
-        for (var d = 0; d < dn; d++) {
-          dots.push({
-            x: Math.random(), y: Math.random(),
-            vx: (Math.random() - 0.5) * 0.055,
-            vy: (Math.random() - 0.5) * 0.055
-          });
-        }
-        tiles.push({ dots: dots });
-      }
-      if (anom && anom.tile >= n) anom = null;
-    }
-
-    function layout() {
-      var w = feed.parentElement.clientWidth;
-      if (!w) return;
-      if (w >= 900) { cols = 4; rows = 3; }
-      else if (w >= 620) { cols = 3; rows = 3; }
-      else { cols = 2; rows = 4; }
-
-      cw = w / cols;
-      ch = cw / 1.6;
-      W = w; H = ch * rows;
-
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      feed.style.width = w + "px";
-      feed.style.height = H + "px";
-      feed.width = Math.round(w * dpr);
-      feed.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      build();
-    }
-
-    function avgReact() {
-      if (!reacts.length) return 0;
-      var s = 0;
-      for (var i = 0; i < reacts.length; i++) s += reacts[i];
-      return Math.round(s / reacts.length);
-    }
-
-    function hud() {
-      eScore.textContent = score;
-      eLevel.textContent = level;
-      eTime.textContent = Math.max(0, Math.ceil(timeLeft));
-      timeCell.classList.toggle("low", timeLeft <= 10);
-      var a = avgReact();
-      eReact.textContent = a ? a + " ms" : "—";
-    }
-
-    function reset() {
-      score = 0; level = 1; hits = 0; missed = 0;
-      timeLeft = DUR; reacts = []; anom = null; flash = null;
-      nextAt = 700;
-      hud();
-    }
-
-    function windowMs() { return Math.max(850, 2400 - (level - 1) * 145); }
-
-    function spawn() {
-      anom = {
-        tile: Math.floor(Math.random() * tiles.length),
-        x: 0.2 + Math.random() * 0.6,
-        y: 0.2 + Math.random() * 0.6,
-        born: performance.now(),
-        win: windowMs()
-      };
-    }
-
-    function resolve(ok, ms) {
-      if (ok) {
-        hits++;
-        reacts.push(ms);
-        score += 60 + Math.round(140 * Math.max(0, 1 - ms / anom.win));
-        if (hits % 4 === 0) level++;
-        flash = { c: "61,220,255", t: 1 };
-      } else {
-        missed++;
-        flash = { c: "255,71,87", t: 1 };
-      }
-      anom = null;
-      nextAt = 480 + Math.random() * 780;
-      hud();
-    }
-
-    function over() {
-      state = "over";
-      var a = avgReact();
-      var verdict = a && a < 620 ? "Skarpt blikk."
-                  : a && a < 900 ? "Godt nok til å bli lagt merke til."
-                  : "Det tar trening.";
-      vTag.textContent = "Resultat";
-      vTitle.textContent = score + " poeng";
-      vBody.innerHTML = verdict + " Du fanget <b>" + hits + "</b> av <b>" +
-        (hits + missed) + "</b> avvik" + (a ? ", snitt <b>" + a + " ms</b>" : "") + ".";
-      vBtn.textContent = "Prøv igjen";
-      veil.hidden = false;
-    }
-
-    function start() {
-      reset();
-      state = "run";
-      veil.hidden = true;
-    }
-
-    feed.addEventListener("pointerdown", function (e) {
-      if (state !== "run") return;
-      var r = feed.getBoundingClientRect();
-      var cx = Math.floor((e.clientX - r.left) / cw);
-      var cy = Math.floor((e.clientY - r.top) / ch);
-      if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) return;
-      var idx = cy * cols + cx;
-
-      if (anom && anom.tile === idx) {
-        resolve(true, performance.now() - anom.born);
-      } else {
-        score = Math.max(0, score - 60);
-        timeLeft = Math.max(0, timeLeft - 1.5);
-        flash = { c: "255,71,87", t: 0.7 };
-        hud();
-      }
-    });
-
-    function draw(now, dt) {
-      if (!W) return;
-      ctx.clearRect(0, 0, W, H);
-
-      for (var i = 0; i < tiles.length; i++) {
-        var col = i % cols, row = Math.floor(i / cols);
-        var x = col * cw, y = row * ch;
-        var t = tiles[i];
-        var isA = anom && anom.tile === i;
-
-        ctx.fillStyle = "#0a0d12";
-        ctx.fillRect(x, y, cw, ch);
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(x + 1, y + 1, cw - 2, ch - 2);
-        ctx.clip();
-
-        for (var d = 0; d < t.dots.length; d++) {
-          var p = t.dots[d];
-          if (state === "run") {
-            p.x += p.vx * dt; p.y += p.vy * dt;
-            if (p.x < 0.05 || p.x > 0.95) p.vx *= -1;
-            if (p.y < 0.08 || p.y > 0.92) p.vy *= -1;
-          }
-          ctx.fillStyle = "rgba(139,148,167,.42)";
-          ctx.beginPath();
-          ctx.arc(x + p.x * cw, y + p.y * ch, 2.3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        if (isA) {
-          var age = (now - anom.born) / anom.win;
-          var ax = x + anom.x * cw, ay = y + anom.y * ch;
-          var pulse = 1 + Math.sin(now / 90) * 0.16;
-
-          ctx.strokeStyle = "rgba(255,71,87," + (0.5 * (1 - age)) + ")";
-          ctx.lineWidth = 1.4;
-          ctx.beginPath();
-          ctx.arc(ax, ay, (9 + age * 16) * pulse, 0, Math.PI * 2);
-          ctx.stroke();
-
-          ctx.fillStyle = age < 0.45 ? "#ffb020" : "#ff4757";
-          ctx.beginPath();
-          ctx.arc(ax, ay, 4.4 * pulse, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        ctx.fillStyle = "rgba(0,0,0,.16)";
-        for (var sy = y; sy < y + ch; sy += 3) ctx.fillRect(x, sy, cw, 1);
-        ctx.restore();
-
-        ctx.strokeStyle = isA ? "rgba(255,71,87,.55)" : "rgba(255,255,255,.07)";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x + 0.5, y + 0.5, cw - 1, ch - 1);
-
-        ctx.fillStyle = isA ? "rgba(255,71,87,.9)" : "rgba(139,148,167,.5)";
-        ctx.font = "500 9px 'Plex Mono', monospace";
-        ctx.fillText("CAM-" + String(i + 1).padStart(2, "0"), x + 9, y + 16);
-
-        if (isA) {
-          var barW = (cw - 18) * Math.max(0, 1 - (now - anom.born) / anom.win);
-          ctx.fillStyle = "rgba(255,71,87,.75)";
-          ctx.fillRect(x + 9, y + ch - 12, barW, 2);
-        }
-      }
-
-      if (flash) {
-        ctx.fillStyle = "rgba(" + flash.c + "," + (flash.t * 0.13) + ")";
-        ctx.fillRect(0, 0, W, H);
-        flash.t -= dt * 3.2;
-        if (flash.t <= 0) flash = null;
-      }
-    }
-
-    function frame(now) {
-      var dt = last ? Math.min((now - last) / 1000, 0.06) : 0;
-      last = now;
-
-      if (state === "run") {
-        timeLeft -= dt;
-        if (timeLeft <= 0) { timeLeft = 0; over(); }
-
-        if (!anom) {
-          nextAt -= dt * 1000;
-          if (nextAt <= 0) spawn();
-        } else if (now - anom.born > anom.win) {
-          resolve(false, 0);
-        }
-        hud();
-      }
-
-      draw(now, dt);
-      requestAnimationFrame(frame);
-    }
-
-    vBtn.addEventListener("click", start);
-
-    layout();
-    window.addEventListener("resize", function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(layout, 160);
-    });
-    hud();
-    requestAnimationFrame(frame);
-  })();
 
   /* ----------------------------------------------------------
      Adgangskontroll
