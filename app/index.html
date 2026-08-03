@@ -30,6 +30,7 @@
   <img src="../assets/img/desec-icon.png" alt="" width="44" height="44" />
   <h1>Firebase er ikke koblet til ennå</h1>
   <p class="lede">Fyll inn Firebase-nøklene i <code>app/js/firebase-init.js</code> for å aktivere ansattportalen. Se <code>app/SETUP.md</code> for steg-for-steg-oppskrift.</p>
+  <button class="btn btn-solid" id="demo-btn-unconfigured" type="button">Se en demo av appen (uten innlogging)</button>
 </div>
 
 <!-- LOGG INN / REGISTRER -->
@@ -57,6 +58,7 @@
     </form>
 
     <button type="button" class="link-btn" id="show-register">Har du fått en invitasjon? Registrer deg her →</button>
+    <button type="button" class="link-btn" id="demo-btn-login">Bare se hvordan appen ser ut? Prøv demoen →</button>
 
     <form id="register-form" class="form auth-form" hidden>
       <p class="eyebrow">Registrer deg</p>
@@ -87,6 +89,7 @@
     </a>
     <div class="app-user">
       <span class="app-user-name" id="user-name">—</span>
+      <span class="badge" id="demo-badge" hidden>Demo</span>
       <span class="badge" id="user-role">—</span>
       <button class="btn btn-line btn-sm" id="logout-btn" type="button">Logg ut</button>
     </div>

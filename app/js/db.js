@@ -6,29 +6,36 @@ import {
   ref, uploadBytes, getDownloadURL,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { db, storage } from "./firebase-init.js";
+import { isDemo } from "./util/demo.js";
+import * as demo from "./demo-store.js";
 
 /* ---------------- Ansatte ---------------- */
 
 export async function getEmployee(uid) {
+  if (isDemo()) return demo.getEmployee(uid);
   const snap = await getDoc(doc(db, "employees", uid));
   return snap.exists() ? { uid: snap.id, ...snap.data() } : null;
 }
 
 export async function listEmployees() {
+  if (isDemo()) return demo.listEmployees();
   const snap = await getDocs(query(collection(db, "employees"), orderBy("name")));
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
 }
 
 // Kun leder: full oppdatering (uniform, kurs, lønn, rolle, aktiv)
 export async function updateEmployeeAdmin(uid, patch) {
+  if (isDemo()) return demo.updateEmployeeAdmin(uid, patch);
   await updateDoc(doc(db, "employees", uid), patch);
 }
 
 export async function deleteEmployee(uid) {
+  if (isDemo()) return demo.deleteEmployee(uid);
   await deleteDoc(doc(db, "employees", uid));
 }
 
 export async function createInvite({ email, name, role, hourlyRateOverride }) {
+  if (isDemo()) return demo.createInvite({ email, name, role, hourlyRateOverride });
   const id = email.trim().toLowerCase();
   await setDoc(doc(db, "invites", id), {
     name, role, hourlyRateOverride: hourlyRateOverride ?? null,
@@ -38,11 +45,13 @@ export async function createInvite({ email, name, role, hourlyRateOverride }) {
 }
 
 export async function listInvites() {
+  if (isDemo()) return demo.listInvites();
   const snap = await getDocs(collection(db, "invites"));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function deleteInvite(email) {
+  if (isDemo()) return demo.deleteInvite(email);
   await deleteDoc(doc(db, "invites", email.trim().toLowerCase()));
 }
 
@@ -71,30 +80,31 @@ export async function claimInvite(uid, email) {
 /* ---------------- Kunder ---------------- */
 
 export async function listCustomers() {
+  if (isDemo()) return demo.listCustomers();
   const snap = await getDocs(query(collection(db, "customers"), orderBy("name")));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function createCustomer(data) {
+  if (isDemo()) return demo.createCustomer(data);
   return (await addDoc(collection(db, "customers"), { ...data, createdAt: serverTimestamp() })).id;
 }
 
-export async function updateCustomer(id, patch) {
-  await updateDoc(doc(db, "customers", id), patch);
-}
-
 export async function deleteCustomer(id) {
+  if (isDemo()) return demo.deleteCustomer(id);
   await deleteDoc(doc(db, "customers", id));
 }
 
 /* ---------------- Instrukser ---------------- */
 
 export async function listInstructions() {
+  if (isDemo()) return demo.listInstructions();
   const snap = await getDocs(collection(db, "instructions"));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function upsertInstruction(id, data) {
+  if (isDemo()) return demo.upsertInstruction(id, data);
   if (id) {
     await updateDoc(doc(db, "instructions", id), { ...data, updatedAt: serverTimestamp() });
     return id;
@@ -103,39 +113,42 @@ export async function upsertInstruction(id, data) {
 }
 
 export async function deleteInstruction(id) {
+  if (isDemo()) return demo.deleteInstruction(id);
   await deleteDoc(doc(db, "instructions", id));
 }
 
 /* ---------------- Vaktplan ---------------- */
 
 export async function listShifts() {
+  if (isDemo()) return demo.listShifts();
   const snap = await getDocs(query(collection(db, "shifts"), orderBy("date")));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function createShift(data) {
+  if (isDemo()) return demo.createShift(data);
   return (await addDoc(collection(db, "shifts"), { ...data, createdAt: serverTimestamp() })).id;
 }
 
-export async function updateShift(id, patch) {
-  await updateDoc(doc(db, "shifts", id), patch);
-}
-
 export async function deleteShift(id) {
+  if (isDemo()) return demo.deleteShift(id);
   await deleteDoc(doc(db, "shifts", id));
 }
 
 /* ---------------- Rapporter ---------------- */
 
 export async function createDeviationReport(data) {
+  if (isDemo()) return demo.createDeviationReport(data);
   return (await addDoc(collection(db, "deviationReports"), { ...data, createdAt: serverTimestamp() })).id;
 }
 
 export async function createForceReport(data) {
+  if (isDemo()) return demo.createForceReport(data);
   return (await addDoc(collection(db, "forceReports"), { ...data, createdAt: serverTimestamp() })).id;
 }
 
 export async function listAllReports() {
+  if (isDemo()) return demo.listAllReports();
   const [devSnap, forceSnap] = await Promise.all([
     getDocs(query(collection(db, "deviationReports"), orderBy("createdAt", "desc"))),
     getDocs(query(collection(db, "forceReports"), orderBy("createdAt", "desc"))),
@@ -147,6 +160,7 @@ export async function listAllReports() {
 }
 
 export async function listMyReports(uid) {
+  if (isDemo()) return demo.listMyReports(uid);
   const [devSnap, forceSnap] = await Promise.all([
     getDocs(query(collection(db, "deviationReports"), where("reportedByUid", "==", uid))),
     getDocs(query(collection(db, "forceReports"), where("reportedByUid", "==", uid))),
@@ -158,6 +172,7 @@ export async function listMyReports(uid) {
 }
 
 export async function getReport(type, id) {
+  if (isDemo()) return demo.getReport(type, id);
   const col = type === "avvik" ? "deviationReports" : "forceReports";
   const snap = await getDoc(doc(db, col, id));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
@@ -166,6 +181,7 @@ export async function getReport(type, id) {
 /* ---------------- Storage (bilder + signatur) ---------------- */
 
 export async function uploadImages(folder, id, files) {
+  if (isDemo()) return files.map((file) => ({ path: "", url: URL.createObjectURL(file) }));
   const urls = [];
   for (const file of files) {
     const path = `${folder}/${id}/${Date.now()}-${file.name}`;
@@ -177,6 +193,7 @@ export async function uploadImages(folder, id, files) {
 }
 
 export async function uploadSignature(id, blob) {
+  if (isDemo()) return { path: "", url: URL.createObjectURL(blob) };
   const path = `signaturer/${id}-${Date.now()}.png`;
   const r = ref(storage, path);
   await uploadBytes(r, blob, { contentType: "image/png" });

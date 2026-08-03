@@ -1,5 +1,8 @@
 import { isConfigured } from "./firebase-init.js";
 import { login, logout, registerFromInvite, watchSession } from "./auth.js";
+import { isDemo, enableDemo, disableDemo } from "./util/demo.js";
+import { getEmployee } from "./db.js";
+import { DEMO_UID } from "./demo-store.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -14,6 +17,9 @@ const el = {
   registerNote: $("#register-note"),
   showRegister: $("#show-register"),
   showLogin: $("#show-login"),
+  demoBtnUnconfigured: $("#demo-btn-unconfigured"),
+  demoBtnLogin: $("#demo-btn-login"),
+  demoBadge: $("#demo-badge"),
   userName: $("#user-name"),
   userRole: $("#user-role"),
   logoutBtn: $("#logout-btn"),
@@ -25,11 +31,63 @@ const el = {
 
 export const state = { employee: null, user: null };
 
-if (!isConfigured) {
+wireAppChrome();
+el.demoBtnUnconfigured.addEventListener("click", () => { enableDemo(); enterDemo(); });
+el.demoBtnLogin.addEventListener("click", () => { enableDemo(); enterDemo(); });
+
+if (isDemo()) {
+  enterDemo();
+} else if (!isConfigured) {
   el.loading.hidden = true;
   el.unconfigured.hidden = false;
 } else {
   boot();
+}
+
+// Ting som er trygt å koble til uansett om Firebase er satt opp eller ikke.
+function wireAppChrome() {
+  el.appBurger.addEventListener("click", () => {
+    const open = el.appBody.classList.toggle("nav-open");
+    el.appBurger.setAttribute("aria-expanded", String(open));
+  });
+  el.nav.addEventListener("click", (e) => {
+    if (e.target.closest("a")) el.appBody.classList.remove("nav-open");
+  });
+  el.logoutBtn.addEventListener("click", () => {
+    if (isDemo()) {
+      disableDemo();
+      location.reload();
+      return;
+    }
+    logout();
+  });
+}
+
+// Viser appen med eksempeldata, uten at Firebase er satt opp eller at noen har logget inn.
+async function enterDemo() {
+  el.loading.hidden = true;
+  el.unconfigured.hidden = true;
+  el.loginScreen.hidden = true;
+
+  const employee = await getEmployee(DEMO_UID);
+  state.employee = employee;
+  state.user = { uid: DEMO_UID };
+
+  el.demoBadge.hidden = false;
+  applyEmployeeChrome(employee);
+  el.appScreen.hidden = false;
+
+  window.addEventListener("hashchange", router);
+  router();
+}
+
+function applyEmployeeChrome(employee) {
+  el.userName.textContent = employee.name;
+  el.userRole.textContent = employee.role === "leder" ? "Leder" : "Vekter";
+  el.userRole.classList.toggle("leder", employee.role === "leder");
+  document.querySelectorAll("[data-leder-only]").forEach((n) => {
+    n.style.display = employee.role === "leder" ? "" : "none";
+  });
 }
 
 function boot() {
@@ -74,16 +132,6 @@ function boot() {
     }
   });
 
-  el.logoutBtn.addEventListener("click", () => logout());
-
-  el.appBurger.addEventListener("click", () => {
-    const open = el.appBody.classList.toggle("nav-open");
-    el.appBurger.setAttribute("aria-expanded", String(open));
-  });
-  el.nav.addEventListener("click", (e) => {
-    if (e.target.closest("a")) el.appBody.classList.remove("nav-open");
-  });
-
   watchSession(async (employee, user) => {
     state.employee = employee;
     state.user = user;
@@ -106,13 +154,7 @@ function boot() {
 
     el.loginScreen.hidden = true;
     el.appScreen.hidden = false;
-    el.userName.textContent = employee.name;
-    el.userRole.textContent = employee.role === "leder" ? "Leder" : "Vekter";
-    el.userRole.classList.toggle("leder", employee.role === "leder");
-
-    document.querySelectorAll("[data-leder-only]").forEach((n) => {
-      n.style.display = employee.role === "leder" ? "" : "none";
-    });
+    applyEmployeeChrome(employee);
 
     router();
   });
