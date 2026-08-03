@@ -2,6 +2,9 @@
    Ansattportal — bygger videre på tokens fra assets/css/style.css
    ============================================================ */
 
+/* [hidden] må vinne over display:flex/grid som settes lenger ned i filen */
+[hidden] { display: none !important; }
+
 .load-screen {
   min-height: 100vh;
   display: flex;
