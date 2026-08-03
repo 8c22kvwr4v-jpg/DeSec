@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isActiveEmployee() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/employees/$(request.auth.uid));
+    }
+    function myEmployee() {
+      return get(/databases/$(database)/documents/employees/$(request.auth.uid)).data;
+    }
+    function isLeder() {
+      return isActiveEmployee() && myEmployee().role == 'leder';
+    }
+    function inviteFor(email) {
+      return get(/databases/$(database)/documents/invites/$(email)).data;
+    }
+
+    // Ansatte
+    match /employees/{uid} {
+      allow read: if isActiveEmployee();
+      allow create: if isLeder() || (
+        isSignedIn() &&
+        request.auth.uid == uid &&
+        exists(/databases/$(database)/documents/invites/$(request.auth.token.email)) &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.role == inviteFor(request.auth.token.email).role
+      );
+      // Ansatte kan oppdatere egne kontaktopplysninger, men ikke rolle, lønn, uniform, kurs eller aktiv-status
+      allow update: if isLeder() || (
+        isSignedIn() && request.auth.uid == uid &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.uniform == resource.data.uniform &&
+        request.resource.data.courses == resource.data.courses &&
+        request.resource.data.hourlyRateOverride == resource.data.hourlyRateOverride &&
+        request.resource.data.active == resource.data.active
+      );
+      allow delete: if isLeder();
+    }
+
+    // Invitasjoner (leder oppretter, ansatt "løser inn" ved registrering)
+    match /invites/{email} {
+      allow read: if isSignedIn();
+      allow create, update: if isLeder();
+      allow delete: if isLeder() || (isSignedIn() && request.auth.token.email == email);
+    }
+
+    // Kunder
+    match /customers/{id} {
+      allow read: if isActiveEmployee();
+      allow write: if isLeder();
+    }
+
+    // Arbeidsinstrukser (knyttet til kunde)
+    match /instructions/{id} {
+      allow read: if isActiveEmployee();
+      allow write: if isLeder();
+    }
+
+    // Vaktplan
+    match /shifts/{id} {
+      allow read: if isActiveEmployee();
+      allow write: if isLeder();
+    }
+
+    // Avviksrapporter
+    match /deviationReports/{id} {
+      allow create: if isActiveEmployee() && request.resource.data.reportedByUid == request.auth.uid;
+      allow read: if isLeder() || (isSignedIn() && resource.data.reportedByUid == request.auth.uid);
+      allow update, delete: if isLeder();
+    }
+
+    // Fysisk maktrapporter
+    match /forceReports/{id} {
+      allow create: if isActiveEmployee() && request.resource.data.reportedByUid == request.auth.uid;
+      allow read: if isLeder() || (isSignedIn() && resource.data.reportedByUid == request.auth.uid);
+      allow update, delete: if isLeder();
+    }
+  }
+}

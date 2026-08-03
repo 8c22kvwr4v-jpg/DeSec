@@ -22,4 +22,11 @@ assets/
   css/style.css
   js/main.js
   img/        (logo og favikoner)
+app/          (ansattportal: vaktplan, instrukser, avvik, maktrapport, team, arkiv, lønn)
 ```
+
+## Ansattportal (`/app/`)
+
+Egen app for ansatte, med innlogging (e-post/passord) og delt database via
+Firebase. Krever et engangsoppsett i Firebase-konsollet før den fungerer —
+se [`app/SETUP.md`](app/SETUP.md) for full oppskrift.

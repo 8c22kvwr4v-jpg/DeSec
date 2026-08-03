@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DeSec — Ansattportal</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#08090C" />
+<link rel="icon" type="image/png" href="../assets/img/favicon-64.png" sizes="64x64" />
+<link rel="apple-touch-icon" href="../assets/img/favicon-180.png" />
+
+<link rel="preload" href="../assets/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="../assets/fonts/plexmono-400.woff2" as="font" type="font/woff2" crossorigin />
+
+<link rel="stylesheet" href="../assets/css/style.css" />
+<link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- LASTER -->
+<div id="loading" class="load-screen">
+  <img src="../assets/img/desec-icon.png" alt="" width="44" height="44" />
+  <p>Laster ansattportal…</p>
+</div>
+
+<!-- IKKE KONFIGURERT -->
+<div id="unconfigured" class="load-screen" hidden>
+  <img src="../assets/img/desec-icon.png" alt="" width="44" height="44" />
+  <h1>Firebase er ikke koblet til ennå</h1>
+  <p class="lede">Fyll inn Firebase-nøklene i <code>app/js/firebase-init.js</code> for å aktivere ansattportalen. Se <code>app/SETUP.md</code> for steg-for-steg-oppskrift.</p>
+</div>
+
+<!-- LOGG INN / REGISTRER -->
+<div id="login-screen" class="auth-screen" hidden>
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img src="../assets/img/desec-icon.png" alt="" width="40" height="40" />
+      <span class="brand-txt"><b>DESEC</b><i>Ansattportal</i></span>
+    </div>
+
+    <form id="login-form" class="form auth-form">
+      <p class="eyebrow">Logg inn</p>
+      <label>
+        <span>E-post</span>
+        <input type="email" name="email" required autocomplete="username" />
+      </label>
+      <label>
+        <span>Passord</span>
+        <input type="password" name="password" required autocomplete="current-password" />
+      </label>
+      <div class="form-send">
+        <button type="submit" class="btn btn-solid">Logg inn</button>
+        <p class="form-note" id="login-note" role="status"></p>
+      </div>
+    </form>
+
+    <button type="button" class="link-btn" id="show-register">Har du fått en invitasjon? Registrer deg her →</button>
+
+    <form id="register-form" class="form auth-form" hidden>
+      <p class="eyebrow">Registrer deg</p>
+      <p class="lede">Bruk e-postadressen lederen din inviterte deg med.</p>
+      <label>
+        <span>E-post (invitasjon)</span>
+        <input type="email" name="email" required autocomplete="username" />
+      </label>
+      <label>
+        <span>Velg passord</span>
+        <input type="password" name="password" required minlength="6" autocomplete="new-password" />
+      </label>
+      <div class="form-send">
+        <button type="submit" class="btn btn-solid">Fullfør registrering</button>
+        <p class="form-note" id="register-note" role="status"></p>
+      </div>
+    </form>
+    <button type="button" class="link-btn" id="show-login" hidden>← Tilbake til innlogging</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="app-shell" hidden>
+  <header class="app-top">
+    <a href="#/vaktplan" class="brand">
+      <img src="../assets/img/desec-icon.png" alt="" width="32" height="32" />
+      <span class="brand-txt"><b>DESEC</b><i>Ansattportal</i></span>
+    </a>
+    <div class="app-user">
+      <span class="app-user-name" id="user-name">—</span>
+      <span class="badge" id="user-role">—</span>
+      <button class="btn btn-line btn-sm" id="logout-btn" type="button">Logg ut</button>
+    </div>
+    <button class="burger" id="app-burger" aria-expanded="false" aria-controls="app-nav" aria-label="Åpne meny">
+      <span></span><span></span>
+    </button>
+  </header>
+
+  <div class="app-body">
+    <nav class="app-nav" id="app-nav" aria-label="Appmeny">
+      <a href="#/vaktplan" data-route="vaktplan">Vaktplan</a>
+      <a href="#/instrukser" data-route="instrukser">Arbeidsinstrukser</a>
+      <a href="#/avvik" data-route="avvik">Avviksrapport</a>
+      <a href="#/makt" data-route="makt">Fysisk maktrapport</a>
+      <a href="#/team" data-route="team">Team</a>
+      <a href="#/arkiv" data-route="arkiv" data-leder-only>Rapportarkiv</a>
+      <a href="#/lonn" data-route="lonn">Lønn</a>
+    </nav>
+
+    <main class="app-main" id="view-root" aria-live="polite">
+      <!-- rendres av router -->
+    </main>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
