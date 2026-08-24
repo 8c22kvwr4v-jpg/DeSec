@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   Designsystem for Avero Sikkerhet
+   Mørk bakgrunn, marineblå flater, lyse tekster og én tydelig
+   kontrastfarge. Alle kombinasjoner er valgt for a ligge godt over
+   WCAG AA pa kontrast.
+   ===================================================================== */
+@theme {
+  --color-natt: #05090f;
+  --color-natt-2: #0a1220;
+
+  --color-marine-900: #0d1b2f;
+  --color-marine-800: #12253d;
+  --color-marine-700: #17304e;
+  --color-marine-600: #1e3d63;
+
+  --color-kant: #1f3b60;
+  --color-linje: #1e3453;
+
+  --color-aksent: #3b7bff;
+  --color-aksent-lys: #6c9dff;
+  --color-aksent-mork: #1d4fd8;
+
+  --color-tekst: #eef3fa;
+  --color-tekst-dempet: #9cabc4;
+  --color-tekst-svak: #6f809b;
+
+  --color-positiv: #34d399;
+  --color-advarsel: #fbbf24;
+  --color-kritisk: #f87171;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif;
+
+  --radius-flate: 1rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-natt);
+  color: var(--color-tekst);
+  font-family: var(--font-sans);
+  /* Ingen utilsiktet horisontal scrolling pa mobil. */
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Bakgrunnen far en rolig marineblå tone øverst. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 520px at 12% -10%, rgba(59, 123, 255, 0.16), transparent 62%),
+    radial-gradient(900px 480px at 100% 0%, rgba(18, 37, 61, 0.85), transparent 60%);
+  z-index: -1;
+}
+
+/* Alltid synlig fokusmarkering for tastatur og skjermlesere. */
+:focus-visible {
+  outline: 2px solid var(--color-aksent-lys);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Plass til den faste navigasjonen nederst pa mobil, inkludert
+   sikkerhetssonen pa iPhone. */
+.med-bunnmeny {
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 1024px) {
+  .med-bunnmeny {
+    padding-bottom: 3rem;
+  }
+}
+
+.bunnmeny {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Skjuler rullefelt der det bare er snakk om en kort vannrett liste. */
+.skjult-rullefelt {
+  scrollbar-width: none;
+}
+.skjult-rullefelt::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
