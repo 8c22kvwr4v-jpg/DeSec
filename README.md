@@ -55,3 +55,13 @@ brukes i formell opplæring.
 Egen app for ansatte, med innlogging (e-post/passord) og delt database via
 Firebase. Krever et engangsoppsett i Firebase-konsollet før den fungerer —
 se [`app/SETUP.md`](app/SETUP.md) for full oppskrift.
+
+## Avero Sikkerhet (`/avero/`)
+
+Internt arbeidsverktøy for Avero Sikkerhet AS: vaktplan, vaktjournal,
+instrukser med lesebekreftelse, rapporter og administrasjonspanel, med
+rollebasert tilgangsstyring håndhevet i databasen.
+
+Egen applikasjon bygget med Next.js, TypeScript, Tailwind CSS og Supabase.
+Se [`avero/README.md`](avero/README.md) for installasjon, database,
+miljøvariabler, testing og publisering.

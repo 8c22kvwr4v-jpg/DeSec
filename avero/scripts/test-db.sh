@@ -15,6 +15,9 @@ case "${1:-up}" in
       chown -R postgres:postgres /tmp/avero-testdb
       su postgres -c "$PGBIN/initdb -D $PGDATA -U postgres --auth=trust -E UTF8" >/dev/null
     fi
+    # Datakatalogen ma ha strenge rettigheter, ellers nekter serveren a starte.
+    chmod 700 "$PGDATA"
+    chown -R postgres:postgres /tmp/avero-testdb
     if ! su postgres -c "$PGBIN/pg_isready -h $PGSOCK -p $PGPORT" >/dev/null 2>&1; then
       su postgres -c "$PGBIN/pg_ctl -D $PGDATA -o '-p $PGPORT -k $PGSOCK -c listen_addresses=127.0.0.1' -l $PGDATA/server.log start" >/dev/null
       sleep 1
