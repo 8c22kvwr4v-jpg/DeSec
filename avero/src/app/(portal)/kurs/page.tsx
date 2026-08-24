@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { GraduationCap } from 'lucide-react';
+import { FileText, GraduationCap } from 'lucide-react';
 import { krevBruker } from '@/lib/auth';
-import { hentKvalifikasjoner } from '@/server/data/varsler';
+import { hentKvalifikasjoner, signertKursdokument } from '@/server/data/varsler';
 import { Kort, Merkelapp, TomTilstand } from '@/components/ui';
 import { formatDate } from '@/lib/dates';
 import { kursstatus, kvalifikasjonstypeNavn } from '@/lib/etiketter';
@@ -10,7 +10,12 @@ export const metadata: Metadata = { title: 'Kurs og godkjenninger' };
 
 export default async function KursSide() {
   const bruker = await krevBruker();
-  const kvalifikasjoner = await hentKvalifikasjoner(bruker.id);
+  const kvalifikasjoner = await Promise.all(
+    (await hentKvalifikasjoner(bruker.id)).map(async (kval) => ({
+      ...kval,
+      lenke: kval.document_path ? await signertKursdokument(kval.document_path) : null,
+    })),
+  );
 
   return (
     <div className="space-y-5">
@@ -64,6 +69,17 @@ export default async function KursSide() {
                       </div>
                     )}
                   </dl>
+                  {kval.lenke && (
+                    <a
+                      href={kval.lenke}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-marine-700 text-sm font-semibold text-tekst ring-1 ring-linje hover:bg-marine-600"
+                    >
+                      <FileText className="h-4 w-4" strokeWidth={2} />
+                      Åpne dokument
+                    </a>
+                  )}
                 </Kort>
               </li>
             );

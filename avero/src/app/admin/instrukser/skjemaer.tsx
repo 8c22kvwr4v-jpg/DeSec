@@ -4,8 +4,10 @@ import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Ban, Send } from 'lucide-react';
 import {
-  opprettInstruks, tildelInstruks, trekkTilbakeTildeling, type Adminstilstand,
+  opprettInstruks, settInstruksDokument, tildelInstruks, trekkTilbakeTildeling,
+  type Adminstilstand,
 } from '@/server/actions/admin';
+import { Bildeopplasting } from '@/components/bildeopplasting';
 import { Beskjed, Knapp } from '@/components/ui';
 import { Avkryssing, Felt, Nedtrekk, Tekstfelt, Tekstområde } from '@/components/skjemafelt';
 import { formatDateShort, formatShiftTime, toDateInputValue } from '@/lib/dates';
@@ -160,6 +162,28 @@ export function TrekkTilbakeSkjema({
         <Ban className="h-3.5 w-3.5" strokeWidth={2} />
         Trekk tilbake
       </button>
+    </form>
+  );
+}
+
+/** Laster opp et dokument og knytter det til instruksen. */
+export function DokumentSkjema({ instruksId, mappe }: { instruksId: string; mappe: string }) {
+  const [tilstand, send] = useActionState<Adminstilstand, FormData>(settInstruksDokument, {});
+  return (
+    <form action={send} className="space-y-3">
+      {tilstand.feil && <Beskjed>{tilstand.feil}</Beskjed>}
+      {tilstand.melding && <Beskjed tone="positiv">{tilstand.melding}</Beskjed>}
+      <input type="hidden" name="instruksId" value={instruksId} />
+      <Bildeopplasting
+        bøtte="instruks-dokumenter"
+        mappe={mappe}
+        navn="dokument"
+        maksAntall={1}
+        aksepterer="application/pdf,image/*"
+        knappetekst="Velg dokument"
+        kamera={false}
+      />
+      <SendKnapp tekst="Lagre dokument" variant="sekundær" />
     </form>
   );
 }

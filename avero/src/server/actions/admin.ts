@@ -608,3 +608,27 @@ export async function sendVarsel(
   revalidatePath('/admin/varsler');
   return { melding: `Varsling sendt til ${mottakere.length} ansatt(e).` };
 }
+
+/** Knytter et opplastet dokument til en instruks. */
+export async function settInstruksDokument(
+  _forrige: Adminstilstand, data: FormData,
+): Promise<Adminstilstand> {
+  await krevRolle('administrator');
+  const instruksId = uuid.safeParse(data.get('instruksId'));
+  if (!instruksId.success) return { feil: 'Ugyldig instruks.' };
+
+  const stier = data.getAll('dokument')
+    .filter((v): v is string => typeof v === 'string' && v.length > 0);
+  if (stier.length === 0) return { feil: 'Last opp en fil først.' };
+
+  const klient = await createClient();
+  const { error } = await klient
+    .from('instructions')
+    .update({ document_path: stier[0] })
+    .eq('id', instruksId.data);
+
+  if (error) return { feil: 'Dokumentet kunne ikke lagres.' };
+
+  revalidatePath(`/admin/instrukser/${instruksId.data}`);
+  return { melding: 'Dokumentet er lagret. Instruksen har fått ny versjon.' };
+}

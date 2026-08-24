@@ -8,7 +8,7 @@ import {
 import { createClient } from '@/lib/supabase/server';
 import { Etikettverdi, Kort, Merkelapp, Seksjon, TomTilstand } from '@/components/ui';
 import { Sidehode } from '@/components/skall';
-import { TildelInstruksSkjema, TrekkTilbakeSkjema } from '../skjemaer';
+import { DokumentSkjema, TildelInstruksSkjema, TrekkTilbakeSkjema } from '../skjemaer';
 import { addDays, formatDate, formatDateTime } from '@/lib/dates';
 
 export const metadata: Metadata = { title: 'Instruks' };
@@ -95,6 +95,23 @@ export default async function AdminInstruksSide({
             ))}
           </ul>
         )}
+      </Seksjon>
+
+      <Seksjon
+        tittel="Vedlagt dokument"
+        beskrivelse="Lagres privat. Ansatte med tildeling åpner det med en tidsbegrenset lenke."
+      >
+        <Kort className="p-4 sm:p-5">
+          {instruks.document_path && (
+            <p className="mb-3 text-sm text-tekst-dempet">
+              Dokument er lastet opp. Last opp en ny fil for å erstatte det.
+            </p>
+          )}
+          <DokumentSkjema
+            instruksId={instruks.id}
+            mappe={`${instruks.company_id}/${instruks.id}`}
+          />
+        </Kort>
       </Seksjon>
 
       <Seksjon tittel="Tildel tilgang">

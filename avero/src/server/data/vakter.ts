@@ -115,13 +115,16 @@ export async function hentVakt(vaktId: string): Promise<VaktVisning | null> {
     .maybeSingle();
   if (!vakt) return null;
 
-  const { data: tildeling } = await klient
+  // En ansatt ser bare sin egen tildeling. En leder kan se flere, sa vi
+  // henter en liste i stedet for a kreve nøyaktig én rad.
+  const { data: tildelinger } = await klient
     .from('shift_assignments')
     .select('*')
     .eq('shift_id', vaktId)
     .is('deleted_at', null)
-    .maybeSingle();
+    .limit(5);
 
+  const tildeling = (tildelinger ?? [])[0] ?? null;
   const kart = new Map(tildeling ? [[tildeling.shift_id, tildeling]] : []);
   const [visning] = await byggVisning(klient, [vakt], kart);
   return visning ?? null;

@@ -13,7 +13,11 @@ import { createClient } from '@/lib/supabase/client';
  */
 export function Bildeopplasting({
   bøtte, mappe, navn = 'vedlegg', maksAntall = 6,
-}: { bøtte: string; mappe: string; navn?: string; maksAntall?: number }) {
+  aksepterer = 'image/*', knappetekst = 'Legg ved bilde', kamera = true,
+}: {
+  bøtte: string; mappe: string; navn?: string; maksAntall?: number;
+  aksepterer?: string; knappetekst?: string; kamera?: boolean;
+}) {
   const [filer, setFiler] = useState<{ sti: string; navn: string }[]>([]);
   const [laster, setLaster] = useState(false);
   const [feil, setFeil] = useState<string | null>(null);
@@ -29,7 +33,7 @@ export function Bildeopplasting({
     try {
       for (const fil of Array.from(valgte).slice(0, maksAntall - filer.length)) {
         if (fil.size > 10 * 1024 * 1024) {
-          setFeil('Bilder kan være inntil 10 MB.');
+          setFeil('Filer kan være inntil 10 MB.');
           continue;
         }
         const endelse = fil.name.split('.').pop()?.toLowerCase() ?? 'jpg';
@@ -68,15 +72,15 @@ export function Bildeopplasting({
         {laster
           ? <Loader2 className="h-5 w-5 animate-spin" strokeWidth={2} />
           : <ImagePlus className="h-5 w-5" strokeWidth={2} />}
-        {laster ? 'Laster opp …' : 'Legg ved bilde'}
+        {laster ? 'Laster opp …' : knappetekst}
       </button>
 
       <input
         ref={filfelt}
         type="file"
-        accept="image/*"
-        capture="environment"
-        multiple
+        accept={aksepterer}
+        {...(kamera ? { capture: 'environment' as const } : {})}
+        multiple={maksAntall > 1}
         className="sr-only"
         onChange={(e) => velgFiler(e.target.files)}
       />
@@ -93,7 +97,7 @@ export function Bildeopplasting({
               <span className="min-w-0 flex-1 truncate">{fil.navn}</span>
               <button
                 type="button"
-                aria-label="Fjern bilde"
+                aria-label="Fjern fil"
                 onClick={() => setFiler((f) => f.filter((v) => v.sti !== fil.sti))}
                 className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-tekst-svak hover:bg-marine-800 hover:text-tekst"
               >
