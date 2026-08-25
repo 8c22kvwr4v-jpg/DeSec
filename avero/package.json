@@ -14,7 +14,8 @@
     "db:test:up": "bash scripts/test-db.sh up",
     "db:test:down": "bash scripts/test-db.sh down",
     "seed": "tsx scripts/seed.ts",
-    "db:test:reset": "bash scripts/test-db.sh reset"
+    "db:test:reset": "bash scripts/test-db.sh reset",
+    "sql:samle": "node scripts/lag-oppsettsfil.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.5",

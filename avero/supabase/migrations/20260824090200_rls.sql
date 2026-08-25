@@ -4,6 +4,27 @@
 -- det en rolle skal se, og alle policyer er avgrenset til eget selskap.
 -- =====================================================================
 
+-- Migrasjonen skal kunne kjores flere ganger. Policyene under opprettes
+-- pa nytt hver gang, sa eksisterende utgaver fjernes forst.
+do $$
+declare r record;
+begin
+  for r in
+    select tablename, policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename in (
+        'companies','roles','departments','profiles','customers','sites','site_contacts',
+        'manager_scopes','employee_site_access','shifts','shift_assignments','journals',
+        'journal_entries','reports','report_attachments','report_shares','instructions',
+        'instruction_assignments','instruction_acknowledgements','qualifications',
+        'notifications','audit_logs')
+  loop
+    execute format('drop policy if exists %I on public.%I', r.policyname, r.tablename);
+  end loop;
+end;
+$$;
+
 grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 grant select on public.roles to anon, authenticated;

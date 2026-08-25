@@ -114,8 +114,11 @@ npx supabase link --project-ref <prosjekt-ref>
 npx supabase db push
 ```
 
-Alternativt: åpne **SQL Editor** i Supabase og kjør filene i
-`supabase/migrations/` i rekkefølge:
+**Enklest:** åpne **SQL Editor** i Supabase, lim inn hele
+`supabase/full-oppsett.sql` og kjør. Filen inneholder alle migrasjonene i
+riktig rekkefølge, og kan kjøres om igjen uten å ødelegge data.
+
+Filen genereres fra migrasjonene med `npm run sql:samle`, og består av:
 
 | Fil | Innhold |
 | --- | --- |

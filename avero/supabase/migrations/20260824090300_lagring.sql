@@ -16,11 +16,24 @@ end;
 $$;
 
 do $$
+declare r record;
 begin
   if not exists (select 1 from pg_namespace where nspname = 'storage') then
     raise notice 'storage-skjemaet finnes ikke (kjorer utenfor Supabase) - hopper over';
     return;
   end if;
+
+  -- Rydder bort tidligere utgaver slik at filen kan kjores om igjen.
+  for r in
+    select policyname from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname in (
+        'rapport_vedlegg_les','rapport_vedlegg_skriv','journal_vedlegg_les',
+        'journal_vedlegg_skriv','instruks_dokument_les','instruks_dokument_skriv',
+        'kvalifikasjon_les','kvalifikasjon_skriv')
+  loop
+    execute format('drop policy if exists %I on storage.objects', r.policyname);
+  end loop;
 
   insert into storage.buckets (id, name, public)
   values ('rapport-vedlegg',     'rapport-vedlegg',     false),
@@ -114,5 +127,9 @@ begin
       and (storage.foldername(name))[1] = public.current_company_id()::text
       and public.is_admin()
     )$p$;
+exception
+  when insufficient_privilege then
+    raise notice 'Mangler rettigheter til a lage policyer pa storage.objects. '
+      'Opprett dem i stedet under Storage -> Policies i Supabase.';
 end;
 $$;
